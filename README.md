@@ -1,3 +1,5 @@
+<img width="1487" height="1012" alt="Screenshot 2026-10-01 151703" src="https://github.com/user-attachments/assets/7bb1bf9e-28ab-4ef1-bd6d-997ca78cabb5" />
+<img width="1497" height="1015" alt="Screenshot 2026-10-01 151523" src="https://github.com/user-attachments/assets/0c9c9eb9-c979-4d3b-b7b1-58ad94a2e61c" />
 # Health Signals: Product Requirements
 
 ## Purpose
