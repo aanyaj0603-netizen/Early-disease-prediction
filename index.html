@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="theme-color" content="#f5f8f5">
+	<meta name="description" content="A symptom-based disease classification demonstration using a Kaggle dataset and machine learning.">
+	<title>Health Signals | HCLTech</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<style>
+		:root { --ink:#102d32; --muted:#718184; --line:#e4ebe6; --paper:#f5f8f5; --green:#117c68; --green-dark:#0d5e51; --lime:#d7f15d; }
+		* { box-sizing:border-box; }
+		body { margin:0; background:var(--paper); color:var(--ink); font:14px "DM Sans",sans-serif; -webkit-font-smoothing:antialiased; }
+		button,input { font:inherit; }
+		button,a { -webkit-tap-highlight-color:transparent; }
+		:focus-visible { outline:3px solid #73c7a8; outline-offset:3px; }
+		.topbar { height:72px; padding:0 max(24px,calc((100vw - 1240px)/2)); display:flex; align-items:center; justify-content:space-between; background:#fff; border-bottom:1px solid var(--line); }
+		.brand { display:flex; align-items:center; gap:12px; font:800 14px "Manrope",sans-serif; }
+		.brand-mark { width:33px; height:29px; }
+		.brand span { color:#a5b3b1; font-weight:400; }
+		.top-meta { display:flex; align-items:center; gap:9px; color:#6e817c; font-size:11px; }
+		.live-dot { width:7px; height:7px; border-radius:50%; background:#39a779; box-shadow:0 0 0 4px #e3f3e9; }
+		main { max-width:1240px; margin:0 auto; padding:35px 24px 44px; }
+		.hero { position:relative; min-height:245px; overflow:hidden; display:flex; align-items:center; border-radius:8px; background:#103a3a; box-shadow:0 18px 50px #123b3610; }
+		.hero-copy { position:relative; z-index:1; max-width:640px; padding:36px 0 36px 43px; }
+		.eyebrow { display:flex; align-items:center; gap:9px; color:#a9d8c2; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+		.eyebrow i { width:6px; height:6px; border-radius:50%; background:var(--lime); }
+		h1 { margin:16px 0 11px; color:#fff; font:600 36px/1.15 "Manrope",sans-serif; letter-spacing:0; }
+		.hero p { max-width:490px; margin:0; color:#c1d6ce; font-size:12px; line-height:1.7; }
+		.hero-art { position:absolute; inset:0 0 0 auto; width:43%; overflow:hidden; background:radial-gradient(ellipse at 60% 50%,#25856b80,transparent 60%); }
+		.orbit { position:absolute; top:50%; left:58%; border:1px solid #bae9cf2e; border-radius:50%; transform:translate(-50%,-50%) rotate(-24deg); }
+		.orbit.a { width:370px; height:170px; }
+		.orbit.b { width:290px; height:220px; transform:translate(-50%,-50%) rotate(42deg); }
+		.pulse { position:absolute; top:50%; left:58%; width:105px; height:105px; display:grid; place-items:center; border:1px solid #cdf6dd70; border-radius:50%; background:radial-gradient(circle at 35% 35%,#3d9478,#145348 74%); box-shadow:0 0 55px #52c89638; transform:translate(-50%,-50%); }
+		.pulse svg { width:43px; }
+		.content-grid { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(310px,.8fr); gap:18px; align-items:start; margin-top:24px; }
+		.panel { border:1px solid var(--line); border-radius:7px; background:#fff; box-shadow:0 8px 28px #19413b08; }
+		.form-panel { padding:23px; }
+		.panel-heading { display:flex; justify-content:space-between; gap:14px; padding-bottom:18px; border-bottom:1px solid #edf1ee; }
+		.panel-heading h2,.result-heading h2 { margin:0 0 5px; font:700 15px "Manrope",sans-serif; letter-spacing:0; }
+		.panel-heading p,.result-heading p { margin:0; color:var(--muted); font-size:11px; line-height:1.5; }
+		.count { flex:0 0 auto; padding:6px 8px; border-radius:3px; background:#eef6f0; color:#477a65; font-size:10px; font-weight:700; }
+		.search-label { display:block; margin:18px 0 8px; color:#36514f; font-size:11px; font-weight:700; }
+		.search-wrap { position:relative; }
+		.search-wrap svg { position:absolute; top:13px; left:12px; color:#879692; pointer-events:none; }
+		.search { width:100%; height:41px; padding:0 13px 0 37px; border:1px solid #dfe8e3; border-radius:4px; background:#fff; color:var(--ink); font-size:11px; }
+		.search::placeholder { color:#9ca9a5; }
+		.list-heading { display:flex; justify-content:space-between; gap:10px; margin:17px 0 8px; color:#80908b; font-size:10px; }
+		.symptom-list { min-height:116px; max-height:195px; overflow:auto; padding:1px 2px 1px 1px; display:flex; align-content:flex-start; flex-wrap:wrap; gap:7px; }
+		.symptom-option { min-height:30px; padding:0 10px; border:1px solid #e2eae5; border-radius:4px; background:#fff; color:#4c625e; font-size:10px; text-align:left; transition:background .15s,border-color .15s,color .15s; }
+		.symptom-option:hover { border-color:#8ebdaa; background:#f1f8f3; }
+		.symptom-option[aria-pressed="true"] { border-color:#8bc5a8; background:#e9f5ed; color:#236c53; }
+		.symptom-option[aria-pressed="true"]::before { content:"+ "; font-weight:700; }
+		.empty-list { padding:17px 5px; color:#8b9995; font-size:11px; }
+		.selected-area { min-height:48px; padding:11px 0 5px; border-top:1px solid #edf1ee; }
+		.selected-title { margin:0 0 8px; color:#80908b; font-size:10px; }
+		.selected-list { display:flex; flex-wrap:wrap; gap:6px; }
+		.symptom-chip { display:inline-flex; align-items:center; gap:7px; padding:5px 7px; border-radius:3px; background:#e9f5ed; color:#286a53; font-size:10px; }
+		.remove-symptom { width:15px; height:15px; padding:0; border:0; background:transparent; color:#52806b; line-height:1; }
+		.placeholder { color:#99a6a2; font-size:10px; }
+		.form-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:18px; padding-top:16px; border-top:1px solid #edf1ee; }
+		.privacy { display:flex; align-items:center; gap:7px; color:#879590; font-size:9px; }
+		.predict-button { min-height:41px; padding:0 15px; display:inline-flex; align-items:center; gap:9px; border:0; border-radius:4px; background:var(--green); color:#fff; font-size:11px; font-weight:700; transition:background .15s,transform .15s; }
+		.predict-button:hover { background:var(--green-dark); transform:translateY(-1px); }
+		.predict-button:disabled { cursor:wait; opacity:.7; transform:none; }
+		.result-panel { overflow:hidden; }
+		.result-heading { padding:20px; border-bottom:1px solid #edf1ee; }
+		.result-state { min-height:250px; padding:22px 20px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+		.result-icon { width:50px; height:50px; margin-bottom:15px; display:grid; place-items:center; border-radius:50%; background:#eaf5ed; color:#358267; }
+		.result-state h3 { max-width:340px; margin:0 0 8px; font:700 16px "Manrope",sans-serif; letter-spacing:0; }
+		.result-state p { max-width:360px; margin:0; color:#80908b; font-size:11px; line-height:1.65; }
+		.result-state.has-result { align-items:stretch; text-align:left; }
+		.result-state.has-result .result-icon { margin-bottom:12px; }
+		.match-label { margin:0 0 6px; color:#82918d; font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; }
+		.result-state.has-result h3 { margin-bottom:17px; font-size:22px; }
+		.matches { display:grid; gap:12px; }
+		.match-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:7px 12px; align-items:center; color:#48615c; font-size:10px; }
+		.match-score { color:#33765c; font-weight:700; }
+		.match-track { grid-column:1/-1; height:4px; overflow:hidden; border-radius:3px; background:#eaf0ec; }
+		.match-track span { display:block; height:100%; border-radius:inherit; background:#55a783; }
+		.disclaimer { padding:13px 18px; border-top:1px solid #edf1ee; background:#f8faf8; color:#84918e; font-size:9px; line-height:1.6; }
+		.source { display:grid; grid-template-columns:20px 1fr; gap:10px; margin-top:16px; padding:14px 16px; border-left:2px solid #acd3bc; color:#73847d; font-size:10px; line-height:1.6; }
+		.source svg { color:#49866a; }
+		.source strong { color:#38594e; }
+		footer { margin-top:24px; padding-top:13px; display:flex; justify-content:space-between; gap:10px; border-top:1px solid #e3eae5; color:#96a29e; font-size:9px; }
+		.toast { position:fixed; right:20px; bottom:20px; z-index:4; max-width:min(380px,calc(100vw - 40px)); padding:12px 15px; border:1px solid #f0cbc0; border-radius:4px; background:#fff; color:#92543f; box-shadow:0 8px 30px #102d321c; font-size:11px; }
+		.hidden { display:none !important; }
+		@media (max-width:760px) {
+			.topbar { height:62px; padding:0 17px; }
+			.brand { font-size:12px; }
+			main { padding:19px 15px 30px; }
+			.hero { min-height:255px; }
+			.hero-copy { padding:27px 22px; }
+			h1 { font-size:30px; }
+			.hero p { max-width:380px; font-size:11px; }
+			.hero-art { width:48%; opacity:.65; }
+			.orbit.a { width:260px; height:125px; }
+			.orbit.b { width:210px; height:155px; }
+			.pulse { width:78px; height:78px; }
+			.pulse svg { width:34px; }
+			.content-grid { grid-template-columns:1fr; gap:12px; margin-top:16px; }
+			.form-panel { padding:17px 15px; }
+			.form-footer { align-items:flex-start; flex-direction:column; }
+			.predict-button { width:100%; justify-content:center; }
+			.result-state { min-height:200px; }
+		}
+		@media (max-width:390px) {
+			.hero-art { width:34%; opacity:.5; }
+			.hero-copy { padding:24px 17px; }
+			h1 { max-width:290px; font-size:27px; }
+			.top-meta { font-size:9px; }
+			.panel-heading { flex-direction:column; }
+			footer { flex-direction:column; }
+		}
+	</style>
+</head>
+<body>
+	<header class="topbar">
+		<div class="brand" aria-label="Health Signals">
+			<svg class="brand-mark" viewBox="0 0 33 29" fill="none" aria-hidden="true"><path d="M2 21.5 9.3 7l6.4 12.8L23 5l8 16.5" stroke="#0075BC" stroke-width="4.2" stroke-linecap="square"/></svg>
+			Health Signals
+		</div>
+		<div class="top-meta"><i class="live-dot" aria-hidden="true"></i><span id="model-status">Connecting to model</span></div>
+	</header>
+	<main>
+		<section class="hero" aria-labelledby="page-title">
+			<div class="hero-copy">
+				<div class="eyebrow"><i></i> Symptom-based classification</div>
+				<h1 id="page-title">A clearer picture<br>starts with a symptom.</h1>
+				<p>Select the symptoms you are experiencing to see the closest matches from a machine-learning model.</p>
+			</div>
+			<div class="hero-art" aria-hidden="true"><div class="orbit a"></div><div class="orbit b"></div><div class="pulse"><svg viewBox="0 0 48 48" fill="none"><path d="M5 24h9l5-11 9 23 6-14h9" stroke="#D7F15D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+		</section>
+		<section class="content-grid" aria-label="Symptom classifier">
+			<form class="panel form-panel" id="symptom-form">
+				<div class="panel-heading"><div><h2>Select your symptoms</h2><p>Search the dataset vocabulary and choose every symptom that applies.</p></div><span class="count" id="symptom-count">0 selected</span></div>
+				<label class="search-label" for="symptom-search">Find a symptom</label>
+				<div class="search-wrap"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input class="search" id="symptom-search" type="search" placeholder="Type a symptom, e.g. headache" autocomplete="off" aria-controls="symptom-list"></div>
+				<div class="list-heading"><span>Available symptoms</span><span id="list-hint">Loading dataset vocabulary...</span></div>
+				<div class="symptom-list" id="symptom-list" role="group" aria-label="Available symptoms"></div>
+				<div class="selected-area"><p class="selected-title">Your selection</p><div class="selected-list" id="selected-list"><span class="placeholder">No symptoms selected yet</span></div></div>
+				<div class="form-footer"><div class="privacy"><svg width="12" height="13" viewBox="0 0 16 18" fill="none" aria-hidden="true"><path d="M8 1.5 2.5 3.7v4.6c0 3.7 2.3 6.4 5.5 8.2 3.2-1.8 5.5-4.5 5.5-8.2V3.7L8 1.5Z" stroke="currentColor" stroke-width="1.4"/><path d="m5.5 8.5 1.7 1.7 3.5-3.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Demo only. Symptoms are sent to the local model service.</div><button class="predict-button" id="predict-button" type="submit" disabled>See model matches <span aria-hidden="true">&#8594;</span></button></div>
+			</form>
+			<aside class="panel result-panel" aria-live="polite" aria-label="Model result">
+				<div class="result-heading"><h2>Prediction results</h2><p id="result-subtitle">Your model output will appear here.</p></div>
+				<div class="result-state" id="result-state"><div class="result-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12h5l3-7 4 14 3-7h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Ready when you are</h3><p>Choose one or more symptoms to see the model's closest disease matches.</p></div>
+				<div class="disclaimer" id="result-disclaimer">For demonstration and education only. This model output is not a diagnosis, medical advice, or a measure of personal disease risk. Speak with a qualified healthcare professional about symptoms.</div>
+			</aside>
+		</section>
+		<section class="source"><svg width="19" height="20" viewBox="0 0 20 22" fill="none" aria-hidden="true"><path d="M10 1.5 2.5 4.4v6.2c0 5 3.1 8.6 7.5 11 4.4-2.4 7.5-6 7.5-11V4.4L10 1.5Z" stroke="currentColor" stroke-width="1.5"/><path d="m6.7 10.5 2.2 2.2 4.5-4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong>About this model.</strong> The <a href="https://www.kaggle.com/datasets/kaushil268/disease-prediction-using-machine-learning" target="_blank" rel="noopener noreferrer">Kaggle dataset</a> contains 132 symptom indicators. The downloaded training and test files contain 41 disease labels. These labels and predictions are a learning exercise, not clinically validated guidance. The selected symptoms stay on this machine and are not saved.</span></section>
+		<footer><span>HCLTech · Health Signals concept experience</span><span id="model-detail">Loading model details...</span></footer>
+	</main>
+	<div class="toast hidden" id="toast" role="alert"></div>
+	<script>
+		const searchInput = document.getElementById('symptom-search');
+		const symptomList = document.getElementById('symptom-list');
+		const selectedList = document.getElementById('selected-list');
+		const predictButton = document.getElementById('predict-button');
+		const selected = new Set();
+		let symptoms = [];
+		let toastTimer;
+
+		function displayName(value) {
+			return value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+		}
+
+		function showError(message) {
+			const toast = document.getElementById('toast');
+			toast.textContent = message;
+			toast.classList.remove('hidden');
+			window.clearTimeout(toastTimer);
+			toastTimer = window.setTimeout(() => toast.classList.add('hidden'), 4000);
+		}
+
+		function renderSymptoms() {
+			const query = searchInput.value.trim().toLowerCase().replaceAll(' ', '_');
+			const matches = symptoms.filter((symptom) => symptom.toLowerCase().includes(query)).slice(0, 48);
+			symptomList.replaceChildren();
+			if (!matches.length) {
+				const empty = document.createElement('div');
+				empty.className = 'empty-list';
+				empty.textContent = 'No matching symptoms in this model vocabulary.';
+				symptomList.append(empty);
+				document.getElementById('list-hint').textContent = '0 matches';
+				return;
+			}
+			const fragment = document.createDocumentFragment();
+			matches.forEach((symptom) => {
+				const option = document.createElement('button');
+				option.type = 'button';
+				option.className = 'symptom-option';
+				option.textContent = displayName(symptom);
+				option.setAttribute('aria-pressed', String(selected.has(symptom)));
+				option.addEventListener('click', () => {
+					if (selected.has(symptom)) selected.delete(symptom);
+					else selected.add(symptom);
+					renderSymptoms();
+					renderSelected();
+				});
+				fragment.append(option);
+			});
+			symptomList.append(fragment);
+			document.getElementById('list-hint').textContent = `${matches.length}${symptoms.length > matches.length ? '+' : ''} shown`;
+		}
+
+		function renderSelected() {
+			selectedList.replaceChildren();
+			document.getElementById('symptom-count').textContent = `${selected.size} selected`;
+			predictButton.disabled = selected.size === 0;
+			if (!selected.size) {
+				const empty = document.createElement('span');
+				empty.className = 'placeholder';
+				empty.textContent = 'No symptoms selected yet';
+				selectedList.append(empty);
+				return;
+			}
+			selected.forEach((symptom) => {
+				const chip = document.createElement('span');
+				chip.className = 'symptom-chip';
+				const text = document.createElement('span');
+				text.textContent = displayName(symptom);
+				const remove = document.createElement('button');
+				remove.type = 'button';
+				remove.className = 'remove-symptom';
+				remove.textContent = '×';
+				remove.setAttribute('aria-label', `Remove ${displayName(symptom)}`);
+				remove.addEventListener('click', () => {
+					selected.delete(symptom);
+					renderSymptoms();
+					renderSelected();
+				});
+				chip.append(text, remove);
+				selectedList.append(chip);
+			});
+		}
+
+		function renderResult(data) {
+			const state = document.getElementById('result-state');
+			state.classList.add('has-result');
+			state.replaceChildren();
+			const icon = document.createElement('div');
+			icon.className = 'result-icon';
+			icon.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+			const label = document.createElement('p');
+			label.className = 'match-label';
+			label.textContent = 'Closest model match';
+			const title = document.createElement('h3');
+			title.textContent = data.prediction;
+			const matches = document.createElement('div');
+			matches.className = 'matches';
+			data.top_matches.forEach((match) => {
+				const row = document.createElement('div');
+				row.className = 'match-row';
+				const name = document.createElement('span');
+				name.textContent = match.disease;
+				const score = document.createElement('span');
+				score.className = 'match-score';
+				score.textContent = `${match.score}% ${data.score_label}`;
+				const track = document.createElement('div');
+				track.className = 'match-track';
+				const bar = document.createElement('span');
+				bar.style.width = `${Math.max(0, Math.min(100, match.score))}%`;
+				track.append(bar);
+				row.append(name, score, track);
+				matches.append(row);
+			});
+			state.append(icon, label, title, matches);
+			document.getElementById('result-subtitle').textContent = `${data.selected_count} symptom${data.selected_count === 1 ? '' : 's'} evaluated · ${data.model_name}`;
+			document.getElementById('result-disclaimer').textContent = `${data.score_note} This result is for demonstration only, not a diagnosis or measure of personal disease risk. Speak with a qualified healthcare professional about symptoms.`;
+		}
+
+		searchInput.addEventListener('input', renderSymptoms);
+		document.getElementById('symptom-form').addEventListener('submit', async (event) => {
+			event.preventDefault();
+			predictButton.disabled = true;
+			predictButton.textContent = 'Running model...';
+			try {
+				const response = await fetch('/api/predict', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ symptoms: [...selected] }),
+				});
+				const data = await response.json();
+				if (!response.ok) throw new Error(data.error || 'Prediction failed.');
+				renderResult(data);
+			} catch (error) {
+				showError(error.message || 'Could not reach the model service.');
+			} finally {
+				predictButton.innerHTML = 'See model matches <span aria-hidden="true">&#8594;</span>';
+				predictButton.disabled = selected.size === 0;
+			}
+		});
+
+		async function initialize() {
+			try {
+				const response = await fetch('/api/symptoms');
+				if (!response.ok) throw new Error('Could not load the model vocabulary.');
+				const data = await response.json();
+				symptoms = data.symptoms;
+				renderSymptoms();
+				document.getElementById('model-status').textContent = 'Model ready';
+				document.getElementById('model-detail').textContent = `${data.model_name} · ${symptoms.length} symptoms · ${data.disease_count} labels · Kaggle test ${data.test_accuracy}% (n=${data.test_count})`;
+			} catch (error) {
+				document.getElementById('model-status').textContent = 'Model unavailable';
+				document.getElementById('list-hint').textContent = 'Start the local Python service';
+				showError('Start the Flask service with "python app.py" to connect to the model.');
+			}
+		}
+
+		initialize();
+	</script>
+</body>
+</html>
+<!-- random forest
+decision tree
+knn
+svc
+logistic regression
+naive bayes
+gradient boosting -->
+
