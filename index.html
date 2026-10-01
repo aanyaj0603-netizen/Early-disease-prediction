@@ -55,7 +55,10 @@
 		.symptom-option[aria-pressed="true"]::before { content:"+ "; font-weight:700; }
 		.empty-list { padding:17px 5px; color:#8b9995; font-size:11px; }
 		.selected-area { min-height:48px; padding:11px 0 5px; border-top:1px solid #edf1ee; }
+		.selected-heading { display:flex; align-items:center; justify-content:space-between; }
 		.selected-title { margin:0 0 8px; color:#80908b; font-size:10px; }
+		.clear-button { margin:-5px 0 3px; padding:5px 0 5px 8px; border:0; background:transparent; color:#33765c; font-size:10px; font-weight:700; }
+		.clear-button:disabled { cursor:default; color:#a5afac; }
 		.selected-list { display:flex; flex-wrap:wrap; gap:6px; }
 		.symptom-chip { display:inline-flex; align-items:center; gap:7px; padding:5px 7px; border-radius:3px; background:#e9f5ed; color:#286a53; font-size:10px; }
 		.remove-symptom { width:15px; height:15px; padding:0; border:0; background:transparent; color:#52806b; line-height:1; }
@@ -140,7 +143,7 @@
 				<div class="search-wrap"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input class="search" id="symptom-search" type="search" placeholder="Type a symptom, e.g. headache" autocomplete="off" aria-controls="symptom-list"></div>
 				<div class="list-heading"><span>Available symptoms</span><span id="list-hint">Loading dataset vocabulary...</span></div>
 				<div class="symptom-list" id="symptom-list" role="group" aria-label="Available symptoms"></div>
-				<div class="selected-area"><p class="selected-title">Your selection</p><div class="selected-list" id="selected-list"><span class="placeholder">No symptoms selected yet</span></div></div>
+				<div class="selected-area"><div class="selected-heading"><p class="selected-title">Your selection</p><button class="clear-button" id="clear-selection" type="button" disabled>Clear all</button></div><div class="selected-list" id="selected-list"><span class="placeholder">No symptoms selected yet</span></div></div>
 				<div class="form-footer"><div class="privacy"><svg width="12" height="13" viewBox="0 0 16 18" fill="none" aria-hidden="true"><path d="M8 1.5 2.5 3.7v4.6c0 3.7 2.3 6.4 5.5 8.2 3.2-1.8 5.5-4.5 5.5-8.2V3.7L8 1.5Z" stroke="currentColor" stroke-width="1.4"/><path d="m5.5 8.5 1.7 1.7 3.5-3.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Demo only. Symptoms are sent to the local model service.</div><button class="predict-button" id="predict-button" type="submit" disabled>See model matches <span aria-hidden="true">&#8594;</span></button></div>
 			</form>
 			<aside class="panel result-panel" aria-live="polite" aria-label="Model result">
@@ -158,9 +161,13 @@
 		const symptomList = document.getElementById('symptom-list');
 		const selectedList = document.getElementById('selected-list');
 		const predictButton = document.getElementById('predict-button');
+		const clearButton = document.getElementById('clear-selection');
 		const selected = new Set();
 		let symptoms = [];
 		let toastTimer;
+		const initialResultContent = document.getElementById('result-state').innerHTML;
+		const initialResultSubtitle = document.getElementById('result-subtitle').textContent;
+		const initialDisclaimer = document.getElementById('result-disclaimer').textContent;
 
 		function displayName(value) {
 			return value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -209,6 +216,7 @@
 			selectedList.replaceChildren();
 			document.getElementById('symptom-count').textContent = `${selected.size} selected`;
 			predictButton.disabled = selected.size === 0;
+			clearButton.disabled = selected.size === 0 && searchInput.value.length === 0;
 			if (!selected.size) {
 				const empty = document.createElement('span');
 				empty.className = 'placeholder';
@@ -235,6 +243,18 @@
 				selectedList.append(chip);
 			});
 		}
+
+		clearButton.addEventListener('click', () => {
+			selected.clear();
+			searchInput.value = '';
+			renderSymptoms();
+			renderSelected();
+			const resultState = document.getElementById('result-state');
+			resultState.classList.remove('has-result');
+			resultState.innerHTML = initialResultContent;
+			document.getElementById('result-subtitle').textContent = initialResultSubtitle;
+			document.getElementById('result-disclaimer').textContent = initialDisclaimer;
+		});
 
 		function renderResult(data) {
 			const state = document.getElementById('result-state');
